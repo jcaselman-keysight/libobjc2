@@ -6,7 +6,7 @@
 #ifdef BOOL
 #undef BOOL
 #endif
-#define BOOL _WINBOOL
+#define BOOL WINBOOL
 
 #include <Windows.h>
 

@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 3.16)
 
 project(libobjc C ASM CXX)
-
+set(CMAKE_POSITION_INDEPENDENT_CODE OFF)
+set(CMAKE_EXE_LINKER_FLAGS -v)
+set(CMAKE_SHARED_LINKER_FLAGS -v)
+set(CMAKE_MODULE_LINKER_FLAGS -v)
 if (NOT "${CMAKE_C_COMPILER_ID}" MATCHES Clang*)
 	message(WARNING "WARNING: It is strongly recommended that you compile with clang")
 elseif (WIN32 AND "${CMAKE_C_COMPILER_FRONTEND_VARIANT}" STREQUAL "MSVC")
@@ -59,7 +62,7 @@ message(STATUS "Architecture: ${ARCHITECTURE}")
 # Build configuration
 add_compile_definitions(GNUSTEP __OBJC_RUNTIME_INTERNAL__=1)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 14)
 
 set(libobjc_ASM_SRCS 
 	block_trampolines.S
@@ -235,7 +238,7 @@ else ()
 		list(APPEND EH_PERSONALITY_FLAGS "${CMAKE_CXX_COMPILE_OPTIONS_TARGET}${CMAKE_CXX_COMPILER_TARGET}")
 	endif ()
 	add_custom_command(OUTPUT eh_trampoline.S
-		COMMAND ${CMAKE_CXX_COMPILER} ARGS ${EH_PERSONALITY_FLAGS} -fPIC -S "${CMAKE_SOURCE_DIR}/eh_trampoline.cc" -o - -fexceptions -fno-inline | sed "s/__gxx_personality_v0/test_eh_personality/g" > "${CMAKE_BINARY_DIR}/eh_trampoline.S"
+		COMMAND ${CMAKE_CXX_COMPILER} ARGS ${EH_PERSONALITY_FLAGS} -S "${CMAKE_SOURCE_DIR}/eh_trampoline.cc" -o - -fexceptions -fno-inline | sed "s/__gxx_personality_v0/test_eh_personality/g" > "${CMAKE_BINARY_DIR}/eh_trampoline.S"
 		MAIN_DEPENDENCY eh_trampoline.cc)
 	list(APPEND libobjc_ASM_SRCS eh_trampoline.S)
 	list(APPEND libobjc_CXX_SRCS objcxx_eh.cc)
@@ -244,7 +247,7 @@ else ()
 endif ()
 
 add_library(objc SHARED ${libobjc_C_SRCS} ${libobjc_ASM_SRCS} ${libobjc_OBJC_SRCS} ${libobjc_OBJCXX_SRCS} ${libobjc_ASM_OBJS})
-target_compile_options(objc PRIVATE "$<$<OR:$<COMPILE_LANGUAGE:OBJC>,$<COMPILE_LANGUAGE:OBJCXX>>:-Wno-deprecated-objc-isa-usage;-Wno-objc-root-class;-fobjc-runtime=gnustep-2.0>$<$<COMPILE_LANGUAGE:C>:-Xclang;-fexceptions>")
+target_compile_options(objc PRIVATE "$<$<OR:$<COMPILE_LANGUAGE:OBJC>,$<COMPILE_LANGUAGE:OBJCXX>>:-Wno-deprecated-objc-isa-usage;-Wno-objc-root-class;-fobjc-runtime=gnustep-1.7>$<$<COMPILE_LANGUAGE:C>:-Xclang;-fexceptions>")
 
 list(APPEND libobjc_CXX_SRCS ${libobjcxx_CXX_SRCS})
 target_sources(objc PRIVATE ${libobjc_CXX_SRCS})
